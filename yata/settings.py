@@ -39,6 +39,7 @@ print(f"[YATA {datestr()}] settings ALLOWED_HOSTS={ALLOWED_HOSTS}")
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'player.apps.PlayerConfig',
@@ -60,8 +61,9 @@ INSTALLED_APPS = [
     'django_extensions',
     'mathfilters',
     'django_json_widget',
-    'redisboard'
+    'redisboard',
     # 'rest_framework',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -126,7 +128,25 @@ else:
     ]
 
 
-WSGI_APPLICATION = 'yata.wsgi.application'
+WSGI_APPLICATION = 'yata.asgi.application'
+
+ASGI_APPLICATION = 'yata.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {},
+}
+if DEBUG:
+    CHANNEL_LAYERS["default"] = dict(CHANNEL_LAYERS["default"], **{
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    })
+else:
+    CHANNEL_LAYERS["default"] = {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [('localhost', 6379)],
+        },
+    }
+
 
 
 # Database

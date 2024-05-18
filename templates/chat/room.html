@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="col-sm-4">
+        <input id="chat-message-input" type="text"/>
+        <input id="chat-message-submit" type="button" value="Send"/>
+        <div id="chat-log" style="">
+
+        </div>
+    </div>
+    <script>
+
+    $(function () {
+        var roomName = {{ room_name_json }};
+        var player = "{{ user.player }}";
+
+        var chatSocket = new WebSocket(
+            'ws://' + window.location.host +
+            '/ws/ranked_war_line/');
+
+        chatSocket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            console.log(data);
+            $.each(data, function (i, v) {
+                $('#chat-log').prepend(
+                    make_message(v.fields.sender, v.fields.received, v.fields.message)
+                );
+
+            });
+            $('.toast').toast('show');
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            var messageInputDom = document.querySelector('#chat-message-input');
+            var message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'sender': player
+            }));
+
+            messageInputDom.value = '';
+        };
+        function formatDate(date) {
+          var hours = date.getHours();
+          var minutes = date.getMinutes();
+          var ampm = hours >= 12 ? 'pm' : 'am';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          minutes = minutes < 10 ? '0'+minutes : minutes;
+          var strTime = hours + ':' + minutes + ' ' + ampm;
+          return date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear() + "  " + strTime;
+        }
+        function make_message(sender, recieved, message) {
+            date_time = new Date(recieved);
+            d= formatDate(date_time);
+            template = '<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false">' +
+              '<div class="toast-header">' +
+                '<img src="{{ player.pfp }}" class="rounded mr-2" alt="...">' +
+                '<strong class="mr-auto">'+ sender +'</strong>' +
+                '<small>'+d.toString()+'</small>' +
+                '<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">' +
+                  '<span aria-hidden="true">&times;</span>' +
+                '</button>' +
+              '</div>' +
+              '<div class="toast-body">' +
+                message +
+              '</div>' +
+            '</div>';
+            return template
+        }
+    });
+</script>
+{% endblock %}

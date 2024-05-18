@@ -48,6 +48,7 @@ urlpatterns = [
     re_path(r'^api/', include('api.urls')),
     re_path(r'^company/', include('company.urls')),
     path(f'{settings.ADMIN_URL_PREFIX}admin', admin.site.urls),
+    path('chat/', include('chat.urls')),
 
     # site
     path('', views.index, name="index"),

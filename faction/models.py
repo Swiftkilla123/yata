@@ -1275,7 +1275,7 @@ class Faction(models.Model):
 
         # if you want to debug this
         # you can return a crafted dictionary like so:
-        # return {'them': {'faction_id': 9528}, 'us': {'faction_id': 41363}}
+        # return {'them': {'faction_id': 7969}, 'us': {'faction_id': 41363}}
         return war
 
     def updateFactionTargets(self):
